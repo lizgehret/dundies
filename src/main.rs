@@ -2,25 +2,40 @@ extern crate rand;
 
 use rand::seq::IteratorRandom;
 use std::fs;
-use std::env;
+use std::io::Write;
+
+fn prompt(name:&str) -> String {
+    let mut line = String::new();
+    print!("{}", name);
+    std::io::stdout().flush().unwrap();
+    std::io::stdin().read_line(&mut line)
+    .expect("Error: Could not read a line");
+
+    return line.trim().to_string()
+}
 pub fn main() {
-    // TODO: print welcome message before prompting user input
-    // println!("Welcome to the annual Dundie Awards Ceremony!
-    // Please type the name of the Office character you'd like to see a quote from.\n");
+    println!("\nWelcome to the annual Dundie Awards Ceremony!
+    Please type the name of the Office character you'd like to see a quote from.\n");
 
-    let args: Vec<String> = env::args().collect();
-    let char = &args[1];
+    loop {
+        let input: String = prompt("> ");
+        let path: String = "./dundies/".to_owned() + &input;
 
-    let path = "./dundies/".to_owned() + char;
+        if input == "quit" {
+            break;
+        }
+        else {
+            let mut rng = rand::thread_rng();
 
-    let mut rng = rand::thread_rng();
+            let files = fs::read_dir(path).expect("Character not found! Please try again.");
 
-    let files = fs::read_dir(path).unwrap();
-    let file = files.choose(&mut rng).unwrap().unwrap();
-    let fp = file.path();
+            let file = files.choose(&mut rng).unwrap().unwrap();
+            let fp = file.path();
 
-    let quote = fs::read_to_string(fp)
-    .expect("Something went wrong reading the file.");
+            let quote = fs::read_to_string(fp)
+            .expect("Something went wrong reading the file.");
 
-    println!("\n{}", quote);
+            println!("\n{}", quote);
+        };
+    }
 }
